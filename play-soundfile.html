@@ -4,7 +4,7 @@
     color: '#E2D96E',
     defaults: {
       name: { value: "" },
-      directory: {value: "", type: "config-soundfile"},
+      directory: {value: "", type: "soundfile-directory"},
       file: { value: "" }
     },
     inputs:1,
@@ -49,18 +49,18 @@
     </dd>
   </dl>
 
-  <h3>Options</h3>
+  <h3>Outputs</h3>
   <dl class="message-properties">
-    <dt>Outputs
+    <dt>
     </dt>
     <dd>
-      Outputs original message after soundfile was played.
+      Outputs original message after the soundfile was played.
     </dd>
   </dl>
 </script>
 
 <script type="text/javascript">
-  RED.nodes.registerType('config-soundfile',{
+  RED.nodes.registerType('soundfile-directory',{
     category: 'config',
     defaults: {
       directory: { value:"", required:true }
@@ -71,7 +71,7 @@
   });
 </script>
 
-<script type="text/html" data-template-name="config-soundfile">
+<script type="text/html" data-template-name="soundfile-directory">
   <div class="form-row">
       <label for="node-config-input-directory"><i class="fa fa-bookmark"></i> Directory</label>
       <input type="text" id="node-config-input-directory" placeholder="Absolute path to directory containing files">

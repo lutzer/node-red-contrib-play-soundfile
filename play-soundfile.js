@@ -24,5 +24,5 @@ module.exports = function(RED) {
     this.directory = config.directory
   }
 
-  RED.nodes.registerType("config-soundfile", ConfigSoundfilerNode);
+  RED.nodes.registerType("soundfile-directory", ConfigSoundfilerNode);
 }
