@@ -1,4 +1,5 @@
 const path = require('path')
+const player = require('play-sound')(opts = {})
 
 module.exports = function(RED) {
   function PlaySoundfileNode(config) {
@@ -7,9 +8,12 @@ module.exports = function(RED) {
       let configNode = RED.nodes.getNode(config.directory)
 
       node.on('input', function(msg) {
-        let filePath = path.normalize(path.join('/' + configNode.directory + '/' + config.file))
-        msg.payload = filePath
-        node.send(msg)
+        let filePath = path.normalize(path.join('/' + configNode.directory + '/' + (msg.file || config.file) ))
+
+        player.play(filePath, function(err){
+          if (err) node.error(`Error playing back file ${filePath}`, msg)
+          else node.send(msg)
+        })
       });
   }
 
