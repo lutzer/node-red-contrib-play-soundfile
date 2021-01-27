@@ -6,11 +6,25 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config)
       let node = this
       let configNode = RED.nodes.getNode(config.directory)
+      let playback = null
 
       node.on('input', function(msg) {
-        let filePath = path.normalize(path.join('/' + configNode.directory + '/' + (msg.file || config.file) ))
+        
+        // stop playback
+        if (msg.topic == "stop" && playback) {
+          playback.kill()
+          return;
+        } else if (playback) {
+          return
+        }
 
-        player.play(filePath, function(err){
+        node.status({ fill: "green", shape: "dot", text: "playing"})
+
+        // start playback
+        let filePath = path.normalize(path.join('/' + configNode.directory + '/' + (msg.file || config.file) ))
+        playback = player.play(filePath, function(err){
+          node.status({})
+          playback = null
           if (err) node.error(`Error playing back file ${filePath}`, msg)
           else node.send(msg)
         })
