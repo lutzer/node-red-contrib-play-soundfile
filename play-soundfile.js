@@ -11,7 +11,7 @@ module.exports = function(RED) {
       node.on('input', function(msg) {
         
         // stop playback
-        if (msg.topic == "stop" && playbacks.length > 0) {
+        if (msg.topic == "stop") {
           playbacks.forEach((p) => p.pl.kill());
           playbacks = []
           node.status({})
@@ -23,7 +23,7 @@ module.exports = function(RED) {
         node.status({ fill: "green", shape: "dot", text: "playing"})
 
         // start playback
-        let filePath = path.normalize(path.join('/' + configNode.directory + '/' + (msg.file || config.file) ))
+        let filePath = path.normalize(path.join(configNode.directory, (msg.file || config.file)))
         let playback = player.play(filePath, function(err){
           // remove playback
           playbacks = playbacks.filter((p) => p.id != msg._msgid)
