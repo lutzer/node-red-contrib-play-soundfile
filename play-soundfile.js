@@ -6,15 +6,17 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config)
       let node = this
       let configNode = RED.nodes.getNode(config.directory)
-      let playback = null
+      let playbacks = []
 
       node.on('input', function(msg) {
         
         // stop playback
-        if (msg.topic == "stop" && playback) {
-          playback.kill()
+        if (msg.topic == "stop" && playbacks.length > 0) {
+          playbacks.forEach((p) => p.pl.kill());
+          playbacks = []
+          node.status({})
           return;
-        } else if (playback) {
+        } else if (playbacks.length > 0 && !config.allow_multiple) {
           return
         }
 
@@ -22,11 +24,20 @@ module.exports = function(RED) {
 
         // start playback
         let filePath = path.normalize(path.join('/' + configNode.directory + '/' + (msg.file || config.file) ))
-        playback = player.play(filePath, function(err){
-          node.status({})
-          playback = null
+        let playback = player.play(filePath, function(err){
+          // remove playback
+          playbacks = playbacks.filter((p) => p.id != msg._msgid)
+
+          if (playbacks.length == 0) node.status({})
+
           if (err) node.error(`Error playing back file ${filePath}`, msg)
           else node.send(msg)
+        })
+
+        // add playback to playbacks list
+        playbacks.push({
+          pl : playback,
+          id: msg._msgid
         })
       });
   }
