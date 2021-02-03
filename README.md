@@ -1,6 +1,6 @@
 # node-red-contrib-play-soundfile
 
-Plays a sound file on the system. Allows to set up a base directory which contains all the sound files.
+Plays a sound file on the system. Allows to set up a base directory which contains all the sound files. If no absolute directory path is supplied it will look for the file relative to the project directory.
 
 ![config](docs/config.png)
 
