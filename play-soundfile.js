@@ -2,17 +2,30 @@ const path = require('path')
 const player = require('play-sound')(opts = {})
 
 module.exports = function(RED) {
+
+  function getProjectDir() {
+    var settings = RED.settings
+    var projects = settings ? settings.get('projects') : null
+    return projects ? path.join(settings.userDir, '/projects/', projects.activeProject) : ''
+  }
+
   function PlaySoundfileNode(config) {
     RED.nodes.createNode(this, config)
-      let node = this
-      let configNode = RED.nodes.getNode(config.directory)
-      let playbacks = []
+      const node = this
+      const configNode = RED.nodes.getNode(config.directory)
+
+      if (!configNode)
+        return;
+
+      const directory = path.isAbsolute(configNode.directory) ? configNode.directory : path.join(getProjectDir(), configNode.directory)
+      
+      var playbacks = []
 
       node.on('input', function(msg) {
         
         // stop playback
         if (msg.topic == "stop") {
-          playbacks.forEach((p) => p.pl.kill());
+          playbacks.forEach((p) => p.pl.kill())
           playbacks = []
           node.status({})
           return;
@@ -23,7 +36,7 @@ module.exports = function(RED) {
         node.status({ fill: "green", shape: "dot", text: "playing"})
 
         // start playback
-        let filePath = path.normalize(path.join(configNode.directory, (msg.file || config.file)))
+        let filePath = path.normalize(path.join(msg.directory || directory, msg.file || config.file))
         let playback = player.play(filePath, function(err){
           // remove playback
           playbacks = playbacks.filter((p) => p.id != msg._msgid)
