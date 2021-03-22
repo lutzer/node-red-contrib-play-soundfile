@@ -6,7 +6,7 @@
       name: { value: "" },
       directory: {value: "", type: "soundfile-directory"},
       file: { value: "" },
-      options: { value: "" },
+      options: { value: "{}" },
       allow_multiple: { value: false }
     },
     inputs:1,
@@ -52,6 +52,16 @@
 
 <script type="text/html" data-help-name="play-soundfile">
   <p>Plays a sound file on the system.</p>
+
+  <h3>Config</h3>
+  <dl class="message-properties">
+    <dt>options
+      <span class="property-type">string</span>
+    </dt>
+    <dd>
+      Refer to <a href="https://github.com/shime/play-sound">https://github.com/shime/play-sound</a> for player options. 
+    </dd>
+  </dl>
 
   <h3>Inputs</h3>
   <dl class="message-properties">
