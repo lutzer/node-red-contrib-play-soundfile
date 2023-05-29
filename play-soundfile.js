@@ -11,7 +11,6 @@ module.exports = function(RED) {
 
   function PlaySoundfileNode(config) {
     RED.nodes.createNode(this, config)
-
     const node = this
     const configNode = RED.nodes.getNode(config.directory)
 
@@ -19,10 +18,17 @@ module.exports = function(RED) {
       return;
 
     const directory = path.isAbsolute(configNode.directory) ? configNode.directory : path.join(getProjectDir(), configNode.directory)
+
+    try {
+      config.options = JSON.parse(config.options)
+    } catch (err) {
+      config.options = {}
+    }
     
     var playbacks = []
 
     node.on('input', function(msg) {
+      
       // stop playback
       if (msg.topic == "stop") {
         playbacks.forEach((p) => p.pl.kill())
@@ -37,13 +43,13 @@ module.exports = function(RED) {
 
       // start playback
       let filePath = path.normalize(path.join(msg.directory || directory, msg.file || config.file))
-      let playback = player.play(filePath, function(err){
+      let playback = player.play(filePath, config.options, function(err){
         // remove playback
         playbacks = playbacks.filter((p) => p.id != msg._msgid)
 
         if (playbacks.length == 0) node.status({})
 
-        if (err) node.error(`Error playing back file ${filePath}`, msg)
+        if (err) node.error(`Error playing back file ${filePath}: ${JSON.stringify(err)}`, msg)
         else node.send(msg)
       })
 

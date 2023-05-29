@@ -1,11 +1,12 @@
 <script type="text/javascript">
   RED.nodes.registerType('play-soundfile', {
-    category: 'function',
+    category: 'output',
     color: '#E2D96E',
     defaults: {
       name: { value: "" },
       directory: {value: "", type: "soundfile-directory"},
       file: { value: "" },
+      options: { value: "{}" },
       allow_multiple: { value: false }
     },
     inputs:1,
@@ -17,6 +18,10 @@
     oneditprepare: function() {
       if (this.directory.length == 0)
         $("#node-input-directory").prop("selectedIndex", 0).change()
+        $("#node-input-options").typedInput({
+            type:"json",
+            types:["json"]
+        })
     }
   })
 </script>
@@ -35,6 +40,10 @@
       <input type="text" id="node-input-file" placeholder="File">
   </div>
   <div class="form-row">
+    <label for="node-input-options"></i> Options</label>
+    <input type="text" id="node-input-options" placeholder="Child proccess options">
+  </div>
+  <div class="form-row">
     <label for="node-input-allow_multiple"></i> Multiple</label>
     <input type="checkbox" id="node-input-allow_multiple" style="width: auto; margin: 5px;">
     <label for="node-input-allow_multiple" style="width: 70%;"> Allow multiple simultaneous playbacks.</label>
@@ -43,6 +52,16 @@
 
 <script type="text/html" data-help-name="play-soundfile">
   <p>Plays a sound file on the system.</p>
+
+  <h3>Config</h3>
+  <dl class="message-properties">
+    <dt>options
+      <span class="property-type">string</span>
+    </dt>
+    <dd>
+      Refer to <a href="https://github.com/shime/play-sound">https://github.com/shime/play-sound</a> for player options. 
+    </dd>
+  </dl>
 
   <h3>Inputs</h3>
   <dl class="message-properties">
