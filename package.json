@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-play-soundfile",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Plays a sound file on the system. Allows to set up a base directory which contains all the sound files.",
   "main": "index.js",
   "scripts": {
