@@ -11,48 +11,55 @@ module.exports = function(RED) {
 
   function PlaySoundfileNode(config) {
     RED.nodes.createNode(this, config)
-      const node = this
-      const configNode = RED.nodes.getNode(config.directory)
 
-      if (!configNode)
+    const node = this
+    const configNode = RED.nodes.getNode(config.directory)
+
+    if (!configNode)
+      return;
+
+    const directory = path.isAbsolute(configNode.directory) ? configNode.directory : path.join(getProjectDir(), configNode.directory)
+    
+    var playbacks = []
+
+    node.on('input', function(msg) {
+      // stop playback
+      if (msg.topic == "stop") {
+        playbacks.forEach((p) => p.pl.kill())
+        playbacks = []
+        node.status({})
         return;
+      } else if (playbacks.length > 0 && !config.allow_multiple) {
+        return
+      }
 
-      const directory = path.isAbsolute(configNode.directory) ? configNode.directory : path.join(getProjectDir(), configNode.directory)
-      
-      var playbacks = []
+      node.status({ fill: "green", shape: "dot", text: "playing"})
 
-      node.on('input', function(msg) {
-        
-        // stop playback
-        if (msg.topic == "stop") {
-          playbacks.forEach((p) => p.pl.kill())
-          playbacks = []
-          node.status({})
-          return;
-        } else if (playbacks.length > 0 && !config.allow_multiple) {
-          return
-        }
+      // start playback
+      let filePath = path.normalize(path.join(msg.directory || directory, msg.file || config.file))
+      let playback = player.play(filePath, function(err){
+        // remove playback
+        playbacks = playbacks.filter((p) => p.id != msg._msgid)
 
-        node.status({ fill: "green", shape: "dot", text: "playing"})
+        if (playbacks.length == 0) node.status({})
 
-        // start playback
-        let filePath = path.normalize(path.join(msg.directory || directory, msg.file || config.file))
-        let playback = player.play(filePath, function(err){
-          // remove playback
-          playbacks = playbacks.filter((p) => p.id != msg._msgid)
+        if (err) node.error(`Error playing back file ${filePath}`, msg)
+        else node.send(msg)
+      })
 
-          if (playbacks.length == 0) node.status({})
+      // add playback to playbacks list
+      playbacks.push({
+        pl : playback,
+        id: msg._msgid
+      })
+    });
 
-          if (err) node.error(`Error playing back file ${filePath}`, msg)
-          else node.send(msg)
-        })
-
-        // add playback to playbacks list
-        playbacks.push({
-          pl : playback,
-          id: msg._msgid
-        })
-      });
+    node.on('close', function(done) {
+      playbacks.forEach((p) => p.pl.kill())
+      playbacks = []
+      node.status({})
+      done()
+    });
   }
 
   RED.nodes.registerType("play-soundfile", PlaySoundfileNode)
