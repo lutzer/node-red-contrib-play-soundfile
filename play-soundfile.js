@@ -49,7 +49,7 @@ module.exports = function(RED) {
 
         if (playbacks.length == 0) node.status({})
 
-        if (err) node.error(`Error playing back file ${filePath}: ${JSON.stringify(err)}`, msg)
+        if (err) node.error(`Error playing back file ${filePath}: ${err.message || err}`, msg)
         else node.send(msg)
       })
 
