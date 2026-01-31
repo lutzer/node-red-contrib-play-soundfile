@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 const player = require('./player')
 
 module.exports = function(RED) {
@@ -43,6 +44,13 @@ module.exports = function(RED) {
 
       // start playback
       let filePath = path.normalize(path.join(msg.directory || directory, msg.file || config.file))
+
+      if (!fs.existsSync(filePath)) {
+        node.status({})
+        node.error(`File not found: ${filePath}`, msg)
+        return
+      }
+
       let playback = player.play(filePath, config.options, function(err){
         // remove playback
         playbacks = playbacks.filter((p) => p.id != msg._msgid)

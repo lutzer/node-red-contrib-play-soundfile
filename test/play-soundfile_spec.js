@@ -161,6 +161,31 @@ describe('play-soundfile Node', function () {
       })
     })
 
+    it('should error with file not found when file does not exist', function (done) {
+      stubPlayer(0)
+      helper.load(playSoundfileNode, makeFlow({ file: 'nonexistent.wav' }), function () {
+        const n1 = helper.getNode('n1')
+        n1.on('call:error', function (call) {
+          call.args[0].should.match(/File not found/)
+          call.args[0].should.match(/nonexistent\.wav/)
+          done()
+        })
+        n1.receive({ payload: 'go', _msgid: 'msg1' })
+      })
+    })
+
+    it('should not call player.play when file does not exist', function (done) {
+      stubPlayer(0)
+      helper.load(playSoundfileNode, makeFlow({ file: 'nonexistent.wav' }), function () {
+        const n1 = helper.getNode('n1')
+        n1.receive({ payload: 'go', _msgid: 'msg1' })
+        setTimeout(function () {
+          playStub.callCount.should.equal(0)
+          done()
+        }, 50)
+      })
+    })
+
     it('should report error via node.error when playback fails', function (done) {
       const testErr = new Error('playback failed')
       stubPlayer(testErr)
@@ -253,12 +278,12 @@ describe('play-soundfile Node', function () {
       stubPlayer(0)
       helper.load(playSoundfileNode, makeFlow(), function () {
         const n1 = helper.getNode('n1')
-        n1.receive({ file: 'other.wav', _msgid: 'msg1' })
-        setTimeout(function () {
-          const filepath = playStub.firstCall.args[0]
-          filepath.should.equal(path.normalize(path.join(FIXTURES_DIR, 'other.wav')))
+        // other.wav doesn't exist, so the file-not-found error should contain the overridden path
+        n1.on('call:error', function (call) {
+          call.args[0].should.match(/other\.wav/)
           done()
-        }, 50)
+        })
+        n1.receive({ file: 'other.wav', _msgid: 'msg1' })
       })
     })
 
@@ -266,12 +291,12 @@ describe('play-soundfile Node', function () {
       stubPlayer(0)
       helper.load(playSoundfileNode, makeFlow(), function () {
         const n1 = helper.getNode('n1')
-        n1.receive({ directory: '/other/dir', _msgid: 'msg1' })
-        setTimeout(function () {
-          const filepath = playStub.firstCall.args[0]
-          filepath.should.equal(path.normalize(path.join('/other/dir', TEST_WAV)))
+        // /other/dir doesn't exist, so the file-not-found error should contain the overridden directory
+        n1.on('call:error', function (call) {
+          call.args[0].should.match(/\/other\/dir/)
           done()
-        }, 50)
+        })
+        n1.receive({ directory: '/other/dir', _msgid: 'msg1' })
       })
     })
   })
