@@ -1,6 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-const player = require('./player')
+const player = require('play-sound')(opts = {})
 
 module.exports = function(RED) {
 

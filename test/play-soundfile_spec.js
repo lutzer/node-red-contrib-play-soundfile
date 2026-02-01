@@ -1,9 +1,13 @@
 const should = require('should')
 const sinon = require('sinon')
 const path = require('path')
+const proxyquire = require('proxyquire').noCallThru()
 const helper = require('node-red-node-test-helper')
-const playSoundfileNode = require('../play-soundfile.js')
-const player = require('../player')
+
+const mockPlayer = { play: function () {} }
+const playSoundfileNode = proxyquire('../play-soundfile.js', {
+  'play-sound': function () { return mockPlayer }
+})
 
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 const TEST_WAV = 'test.wav'
@@ -29,7 +33,7 @@ describe('play-soundfile Node', function () {
 
   function stubPlayer(exitCode) {
     const fakeProc = { kill: sinon.stub() }
-    playStub = sinon.stub(player, 'play').callsFake(function (filepath, options, cb) {
+    playStub = sinon.stub(mockPlayer, 'play').callsFake(function (filepath, options, cb) {
       if (typeof options === 'function') {
         cb = options
       }
@@ -320,7 +324,8 @@ describe('play-soundfile Node', function () {
   describe('integration test with real audio', function () {
     it('should play test.wav end-to-end and send msg to output', function (done) {
       this.timeout(10000)
-      helper.load(playSoundfileNode, makeFlow(), function () {
+      const realNode = require('../play-soundfile.js')
+      helper.load(realNode, makeFlow(), function () {
         const n1 = helper.getNode('n1')
         const n2 = helper.getNode('n2')
         n2.on('input', function (msg) {
